@@ -1,0 +1,30 @@
+[
+  {
+    "question": "What does the CSS clamp() function do?",
+    "answer": "The clamp() function restricts a value between a minimum and maximum boundary while allowing it to scale fluidly between those limits based on the viewport width. It takes three arguments: clamp(minimum, preferred, maximum). The preferred value is typically a viewport-relative expression so the value grows as the screen widens, stopping at the defined maximum and never dropping below the defined minimum."
+  },
+  {
+    "question": "Why should I use rem instead of px for font sizes in clamp()?",
+    "answer": "Using rem units respects the user's browser base font size preference. If a user has increased their browser font size for accessibility reasons, rem-based values scale proportionally with that setting. Pixel values are absolute and override user preferences entirely. For font-size and line-height specifically, rem is strongly recommended to meet WCAG 2.1 Success Criterion 1.4.4, which requires text to be resizable up to 200% without loss of content or functionality."
+  },
+  {
+    "question": "What min and max viewport values should I use?",
+    "answer": "A reliable starting point is 320px as the minimum (the smallest widely-supported mobile width) and 1920px as the maximum (standard full HD desktop). If your layout has a content max-width (e.g., 1200px), you can use that as the max viewport to prevent values from growing too large on very wide screens. The generator works with any two viewport values — use whatever matches your actual design targets."
+  },
+  {
+    "question": "Can I use clamp() for spacing and layout values, not just font sizes?",
+    "answer": "Yes. The clamp() function works with any CSS length property, including margin, padding, gap, border-radius, and width. The CSS Property dropdown in the generator lets you select common properties or enter any custom property name. Fluid spacing is particularly useful for section padding, scaling comfortably between compact mobile spacing and generous desktop spacing without any media query breakpoints."
+  },
+  {
+    "question": "What is the preferred value in the clamp() output?",
+    "answer": "The preferred value is the middle argument of the clamp() function. It is a linear expression combining a vw (viewport-width) component and a rem offset. Together they define a line through two known points: the minimum size at the minimum viewport width, and the maximum size at the maximum viewport width. Between those two points, the value scales continuously and proportionally. The breakdown panel in the generator shows the individual slope and intercept values used to construct it."
+  },
+  {
+    "question": "Will clamp() work in all major browsers?",
+    "answer": "Yes. CSS clamp() has full support across all modern browsers, including Chrome, Firefox, Safari, and Edge, since 2020. No polyfills or fallbacks are required for any modern browser target. If you must support Internet Explorer 11, you will need a static fallback value declared before the clamp() line, as IE11 does not support any CSS math functions."
+  },
+  {
+    "question": "How do I use the output from this generator?",
+    "answer": "Copy the generated declaration using the Copy button and paste it directly into your CSS file. For example: font-size: clamp(1rem, 0.7rem + 1.5vw, 2.5rem); The output is production-ready as generated. No further calculation or modification is needed. You can also use the preset buttons to quickly load common type scale targets, then fine-tune the size values to match your specific design system."
+  }
+]

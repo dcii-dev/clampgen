@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Generate precise CSS clamp() declarations for fluid typography and spacing. Enter your viewport breakpoints and size targets to get an instant, copy-pasteable result.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://clampgen.com/">
+  <title>CSS Clamp Generator - Fluid Typography Calculator</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/ads.css">
+  <!-- Apply saved theme before paint to prevent flash of wrong theme -->
+  <script>
+    (function () {
+      const t = localStorage.getItem("clampgen-theme");
+      if (t === "dark" || t === "light") {
+        document.documentElement.setAttribute("data-theme", t);
+      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- SKIP NAVIGATION -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <!-- HEADER -->
+  <header class="site-header" role="banner">
+    <div class="site-header__inner">
+      <a href="/" class="site-header__logo" aria-label="ClampGen home">
+        <svg class="site-header__logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M8 4C5.5 4 4 6 4 8v12c0 2 1.5 4 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M20 4c2.5 0 4 2 4 4v12c0 2-1.5 4-4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="10" y1="14" x2="18" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="12" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <line x1="12" y1="18" x2="16" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+        <span class="site-header__logo-text">ClampGen</span>
+      </a>
+      <button
+        class="theme-toggle"
+        id="theme-toggle"
+        type="button"
+        aria-label="Switch to dark mode"
+        aria-pressed="false"
+      >
+        <span class="theme-toggle__icon theme-toggle__icon--light" aria-hidden="true">&#9788;</span>
+        <span class="theme-toggle__icon theme-toggle__icon--dark" aria-hidden="true">&#9790;</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- AD LEADERBOARD TOP -->
+  <div class="ad-slot ad-slot--leaderboard" aria-hidden="true">
+    <span class="ad-slot__label">Advertisement</span>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="site-main" id="main-content">
+
+    <!-- TOOL SECTION -->
+    <section class="tool-section" aria-labelledby="tool-heading">
+      <div class="tool-section__inner">
+
+        <h1 class="tool-section__title" id="tool-heading">CSS Clamp Generator</h1>
+        <p class="tool-section__description">
+          Generate fluid <code>clamp()</code> declarations for any CSS property.
+          Enter your viewport breakpoints and size targets to get a precise,
+          copy-pasteable CSS output with no math required.
+        </p>
+
+        <!-- TOOL FORM -->
+        <form class="tool-form" id="clamp-form" aria-label="Clamp generator inputs" novalidate>
+
+          <!-- PROPERTY ROW -->
+          <div class="tool-form__row">
+            <div class="form-group">
+              <label class="form-group__label" for="css-property">CSS Property</label>
+              <select class="form-group__input" id="css-property">
+                <option value="font-size">font-size</option>
+                <option value="line-height">line-height</option>
+                <option value="margin">margin</option>
+                <option value="padding">padding</option>
+                <option value="gap">gap</option>
+                <option value="custom">custom...</option>
+              </select>
+            </div>
+            <div class="form-group" id="custom-property-group" hidden>
+              <label class="form-group__label" for="custom-property">Custom Property Name</label>
+              <input
+                class="form-group__input"
+                type="text"
+                id="custom-property"
+                placeholder="e.g. border-radius"
+                aria-describedby="custom-property-hint"
+              >
+              <span class="form-group__hint" id="custom-property-hint">
+                Any CSS property that accepts a length value.
+              </span>
+            </div>
+          </div>
+
+          <!-- UNIT TOGGLE -->
+          <fieldset class="unit-toggle">
+            <legend class="unit-toggle__legend">Size Unit</legend>
+            <div class="unit-toggle__options">
+              <label class="unit-toggle__option">
+                <input class="unit-toggle__input" type="radio" name="unit" value="rem" checked>
+                <span class="unit-toggle__label">rem</span>
+              </label>
+              <label class="unit-toggle__option">
+                <input class="unit-toggle__input" type="radio" name="unit" value="px">
+                <span class="unit-toggle__label">px</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- INPUT GRID -->
+          <div class="tool-form__grid">
+
+            <div class="form-group">
+              <label class="form-group__label form-group__label--required" for="min-viewport">
+                Min Viewport
+              </label>
+              <div class="form-group__input-wrap">
+                <input
+                  class="form-group__input"
+                  type="number"
+                  id="min-viewport"
+                  value="320"
+                  min="1"
+                  step="1"
+                  aria-required="true"
+                  aria-describedby="min-viewport-hint"
+                >
+                <span class="form-group__suffix">px</span>
+              </div>
+              <span class="form-group__hint" id="min-viewport-hint">Smallest screen width.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-group__label form-group__label--required" for="max-viewport">
+                Max Viewport
+              </label>
+              <div class="form-group__input-wrap">
+                <input
+                  class="form-group__input"
+                  type="number"
+                  id="max-viewport"
+                  value="1920"
+                  min="1"
+                  step="1"
+                  aria-required="true"
+                  aria-describedby="max-viewport-hint"
+                >
+                <span class="form-group__suffix">px</span>
+              </div>
+              <span class="form-group__hint" id="max-viewport-hint">Largest screen width.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-group__label form-group__label--required" for="min-size">
+                Min Size
+              </label>
+              <div class="form-group__input-wrap">
+                <input
+                  class="form-group__input"
+                  type="number"
+                  id="min-size"
+                  value="1"
+                  min="0"
+                  step="0.01"
+                  aria-required="true"
+                  aria-describedby="min-size-hint"
+                >
+                <span class="form-group__suffix" id="size-unit-min">rem</span>
+              </div>
+              <span class="form-group__hint" id="min-size-hint">Smallest property value.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-group__label form-group__label--required" for="max-size">
+                Max Size
+              </label>
+              <div class="form-group__input-wrap">
+                <input
+                  class="form-group__input"
+                  type="number"
+                  id="max-size"
+                  value="2.5"
+                  min="0"
+                  step="0.01"
+                  aria-required="true"
+                  aria-describedby="max-size-hint"
+                >
+                <span class="form-group__suffix" id="size-unit-max">rem</span>
+              </div>
+              <span class="form-group__hint" id="max-size-hint">Largest property value.</span>
+            </div>
+
+          </div>
+
+          <!-- PRESETS -->
+          <div class="presets" role="group" aria-label="Quick presets">
+            <span class="presets__label" aria-hidden="true">Quick Presets:</span>
+            <button class="presets__btn" type="button"
+              data-min-size="1" data-max-size="1.25" data-unit="rem"
+              aria-label="Apply body text preset">Body Text</button>
+            <button class="presets__btn" type="button"
+              data-min-size="1.25" data-max-size="1.75" data-unit="rem"
+              aria-label="Apply H3 preset">H3</button>
+            <button class="presets__btn" type="button"
+              data-min-size="1.5" data-max-size="2.25" data-unit="rem"
+              aria-label="Apply H2 preset">H2</button>
+            <button class="presets__btn" type="button"
+              data-min-size="1.75" data-max-size="3" data-unit="rem"
+              aria-label="Apply H1 preset">H1</button>
+            <button class="presets__btn" type="button"
+              data-min-size="1" data-max-size="2" data-unit="rem"
+              aria-label="Apply spacing preset">Spacing</button>
+          </div>
+
+        </form>
+
+        <!-- RESULTS -->
+        <div class="results" aria-live="polite" aria-label="Generated CSS output">
+          <div class="results__display">
+            <span class="results__label">Generated CSS</span>
+            <output
+              class="results__display-value"
+              id="clamp-output"
+              for="min-viewport max-viewport min-size max-size css-property"
+            >font-size: clamp(1rem, 0.7rem + 1.5vw, 2.5rem);</output>
+          </div>
+          <button
+            class="results__copy-btn"
+            type="button"
+            id="copy-btn"
+            aria-label="Copy generated CSS to clipboard"
+          >Copy</button>
+        </div>
+
+        <!-- CALCULATION BREAKDOWN -->
+        <details class="breakdown" id="breakdown-details">
+          <summary class="breakdown__summary">Show calculation breakdown</summary>
+          <div class="breakdown__body">
+            <dl class="breakdown__list">
+              <div class="breakdown__row">
+                <dt class="breakdown__term">Min clamped value</dt>
+                <dd class="breakdown__detail" id="breakdown-min">1rem</dd>
+              </div>
+              <div class="breakdown__row">
+                <dt class="breakdown__term">Max clamped value</dt>
+                <dd class="breakdown__detail" id="breakdown-max">2.5rem</dd>
+              </div>
+              <div class="breakdown__row">
+                <dt class="breakdown__term">Slope</dt>
+                <dd class="breakdown__detail" id="breakdown-slope">0.015 px per px of viewport</dd>
+              </div>
+              <div class="breakdown__row">
+                <dt class="breakdown__term">Y-intercept</dt>
+                <dd class="breakdown__detail" id="breakdown-intercept">11.2px</dd>
+              </div>
+              <div class="breakdown__row">
+                <dt class="breakdown__term">Preferred value</dt>
+                <dd class="breakdown__detail" id="breakdown-preferred">0.7rem + 1.5vw</dd>
+              </div>
+            </dl>
+          </div>
+        </details>
+
+      </div>
+    </section>
+
+    <!-- AD INLINE MID PAGE -->
+    <div class="ad-slot ad-slot--inline" aria-hidden="true">
+      <span class="ad-slot__label">Advertisement</span>
+    </div>
+
+    <!-- CONTENT + SIDEBAR LAYOUT -->
+    <div class="content-layout">
+
+      <!-- MAIN COPY -->
+      <section class="content-section" aria-labelledby="content-heading">
+        <div class="content-section__body">
+
+          <h2 id="content-heading">What Is CSS clamp() and Why Does It Matter?</h2>
+          <p>
+            The CSS <code>clamp()</code> function lets you set a value that scales fluidly between a minimum
+            and maximum based on the current viewport width. Instead of writing multiple breakpoint-specific
+            media queries to manage different screen sizes, a single <code>clamp()</code> declaration handles
+            the full range continuously and proportionally.
+          </p>
+          <p>
+            The function signature is: <code>clamp(minimum, preferred, maximum)</code>. The preferred value
+            is a viewport-relative expression that combines <code>vw</code> units with a <code>rem</code>
+            offset, causing the value to grow linearly as the screen widens, up to the defined maximum.
+          </p>
+
+          <h2>The Math Behind the Generator</h2>
+          <p>
+            The preferred value inside <code>clamp()</code> is calculated using linear interpolation between
+            two known data points: the target size at the minimum viewport width, and the target size at
+            the maximum viewport width.
+          </p>
+          <p>The formulas used are:</p>
+          <pre class="code-block"><code>slope     = (maxSize - minSize) / (maxViewport - minViewport)
+intercept = minSize - (slope x minViewport)
+preferred = intercept + (slope x 100vw)</code></pre>
+          <p>
+            Both the slope and intercept are calculated in pixels, then converted to <code>rem</code> and
+            <code>vw</code> for the CSS output. The result is a single declaration that scales perfectly
+            across every screen width between your two breakpoints, with hard floor and ceiling values
+            enforced by the min and max arguments.
+          </p>
+
+          <h2>Why Fluid Typography Reduces Layout Shift</h2>
+          <p>
+            Cumulative Layout Shift (CLS) is a Core Web Vital used by Google as a direct ranking signal.
+            When font sizes or spacing values change abruptly at media query breakpoints, the resulting
+            reflow causes measurable CLS penalties that hurt both user experience and search rankings.
+            Fluid values derived from <code>clamp()</code> eliminate these jumps entirely by making changes
+            continuous rather than stepped.
+          </p>
+          <p>
+            Beyond CLS, fluid typography improves cross-device readability. A heading that is too large
+            on a small phone or too small on a widescreen monitor forces users to scroll, zoom, or
+            disengage. Proportional scaling removes that friction with no JavaScript overhead.
+          </p>
+
+          <h2>clamp() vs. Media Queries: When to Use Each</h2>
+          <p>
+            <code>clamp()</code> is the right tool when a value should scale proportionally across a
+            continuous viewport range. Common use cases include:
+          </p>
+          <ul>
+            <li>Body text and heading font sizes</li>
+            <li>Section padding and vertical rhythm spacing</li>
+            <li>Component gap and margin values</li>
+            <li>Line heights relative to viewport</li>
+          </ul>
+          <p>
+            Media queries remain the right tool for structural layout changes: switching from a
+            single-column to a two-column grid, hiding or showing elements, or changing component
+            orientation. Use both in combination. Let <code>clamp()</code> handle proportional
+            scaling and media queries handle layout mode shifts.
+          </p>
+
+          <h2>Common Viewport Breakpoint Reference</h2>
+          <p>
+            These standard viewport widths serve as a reliable baseline for most projects. Use your
+            smallest supported device as the min viewport and your content max-width (or 1920px)
+            as the max.
+          </p>
+          <table class="reference-table" aria-label="Common viewport breakpoints">
+            <thead>
+              <tr>
+                <th scope="col">Breakpoint Name</th>
+                <th scope="col">Width (px)</th>
+                <th scope="col">Common Devices</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>XS — Small Mobile</td>
+                <td>320</td>
+                <td>iPhone SE, older Android</td>
+              </tr>
+              <tr>
+                <td>Mobile</td>
+                <td>375 — 390</td>
+                <td>iPhone 14, Galaxy S22</td>
+              </tr>
+              <tr>
+                <td>Large Mobile</td>
+                <td>430</td>
+                <td>iPhone 14 Plus, Pixel 7</td>
+              </tr>
+              <tr>
+                <td>Tablet</td>
+                <td>768</td>
+                <td>iPad portrait</td>
+              </tr>
+              <tr>
+                <td>Desktop</td>
+                <td>1280 — 1440</td>
+                <td>Standard laptop and monitor</td>
+              </tr>
+              <tr>
+                <td>Wide Desktop</td>
+                <td>1920</td>
+                <td>Full HD monitor</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Using rem vs. px for Font Sizes</h2>
+          <p>
+            This generator defaults to <code>rem</code> units and that is intentional. Rem values are
+            relative to the user's browser base font size (typically 16px), which means they respect
+            accessibility settings. If a user increases their browser font size for readability, rem-based
+            values scale with that preference. Pixel values are absolute and override it.
+          </p>
+          <p>
+            For <code>font-size</code> and <code>line-height</code>, always use <code>rem</code>. For
+            spacing properties like <code>gap</code>, <code>padding</code>, and <code>margin</code>,
+            either unit is acceptable, though rem remains the more accessible choice.
+          </p>
+          <p>
+            This aligns with WCAG 2.1 Success Criterion 1.4.4 (Resize Text), which requires text
+            to be resizable up to 200% without loss of content or functionality. Absolute pixel
+            font sizes can fail this criterion.
+          </p>
+
+          <h2>Tips for Using This Generator</h2>
+          <ul>
+            <li>
+              Set min viewport to the smallest device you support (320px or 375px is standard)
+              and max viewport to 1920px or your layout's max-width.
+            </li>
+            <li>
+              Use the Quick Presets as a starting point and adjust the size values to match your
+              specific design system scale.
+            </li>
+            <li>
+              The CSS Property dropdown covers common properties, but any CSS property that accepts
+              a length value works. Select "custom..." to enter any property name.
+            </li>
+            <li>
+              Paste the output directly into your CSS file. No further calculation is needed. The
+              value is production-ready as generated.
+            </li>
+            <li>
+              Use the "Show calculation breakdown" panel to understand the slope and intercept values.
+              This is useful for debugging or verifying the output against your design specs.
+            </li>
+          </ul>
+
+        </div>
+      </section>
+
+      <!-- SIDEBAR AD -->
+      <aside class="content-sidebar" aria-label="Advertisements">
+        <div class="ad-slot ad-slot--sidebar" aria-hidden="true">
+          <span class="ad-slot__label">Advertisement</span>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- AD MEDIUM RECTANGLE -->
+    <div class="ad-slot ad-slot--rectangle" aria-hidden="true">
+      <span class="ad-slot__label">Advertisement</span>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <div class="faq-section__inner">
+        <h2 class="faq-section__title" id="faq-heading">Frequently Asked Questions</h2>
+        <div class="faq__accordion" id="faq-accordion" aria-label="FAQ accordion">
+          <!-- Populated by js/content.js from data/faq.json -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">
+        &copy; <span id="footer-year"></span> ClampGen. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/content.js"></script>
+
+</body>
+</html>
