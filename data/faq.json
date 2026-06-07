@@ -26,5 +26,21 @@
   {
     "question": "How do I use the output from this generator?",
     "answer": "Copy the generated declaration using the Copy button and paste it directly into your CSS file. For example: font-size: clamp(1rem, 0.7rem + 1.5vw, 2.5rem); The output is production-ready as generated. No further calculation or modification is needed. You can also use the preset buttons to quickly load common type scale targets, then fine-tune the size values to match your specific design system."
+  },
+  {
+    "question": "What is the Type Scale Generator and how does it work?",
+    "answer": "The Type Scale Generator creates a complete set of fluid font-size declarations from a single body text range and a modular ratio. You enter your body text minimum and maximum sizes in pixels, select a scale ratio (like Minor Third at 1.2 or Perfect Fourth at 1.333), and choose which heading levels to include. The tool multiplies each step up the scale by the ratio, then generates a clamp() declaration for every level. The result is a harmonious type system where each heading is proportionally larger than the one below it."
+  },
+  {
+    "question": "What scale ratio should I choose for my type scale?",
+    "answer": "It depends on the contrast you want between heading levels. Minor Second (1.067) and Major Second (1.125) produce subtle differences, suitable for dense UIs or small screens. Minor Third (1.2) is the most popular general-purpose ratio and works well for most websites. Major Third (1.25) and Perfect Fourth (1.333) create more dramatic contrast, ideal for marketing pages and editorial layouts. Augmented Fourth, Perfect Fifth, and Golden Ratio produce very large headings and are best used when you only need h1 through h3."
+  },
+  {
+    "question": "Can I copy all type scale declarations at once?",
+    "answer": "Yes. After generating a type scale, click the Copy All button above the output. This copies every declaration as a formatted CSS block with a comment header identifying the ratio used. You can paste it directly into your stylesheet with no reformatting needed."
+  },
+  {
+    "question": "What is the difference between Viewport (vw) and Container (cqw) mode?",
+    "answer": "Viewport mode uses vw units, which scale relative to the full browser window width. Container mode uses cqw units, which scale relative to the width of the nearest ancestor element with container-type: inline-size set. Use viewport mode for page-level typography and global spacing. Use container mode for component-driven designs where a card, sidebar, or widget needs text that scales based on its own container width rather than the whole page. When in container mode, set the Min and Max fields to the smallest and largest widths your container will occupy."
   }
 ]

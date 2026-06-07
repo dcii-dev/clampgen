@@ -1,24 +1,34 @@
 (function () {
   "use strict";
 
-  const BASE_FONT_SIZE_PX = 16;
+  const DEFAULT_BASE_FONT_SIZE = 16;
 
   /**
-   * Converts pixels to rem.
+   * Reads the user-defined root font size from the input, falling back to 16.
+   * @return {number}
+   */
+  function getBaseFontSize() {
+    const el = document.getElementById("root-font-size");
+    const val = el ? parseFloat(el.value) : DEFAULT_BASE_FONT_SIZE;
+    return val > 0 ? val : DEFAULT_BASE_FONT_SIZE;
+  }
+
+  /**
+   * Converts pixels to rem using the current base font size.
    * @param {number} px
    * @return {number}
    */
   function pxToRem(px) {
-    return px / BASE_FONT_SIZE_PX;
+    return px / getBaseFontSize();
   }
 
   /**
-   * Converts rem to pixels.
+   * Converts rem to pixels using the current base font size.
    * @param {number} rem
    * @return {number}
    */
   function remToPx(rem) {
-    return rem * BASE_FONT_SIZE_PX;
+    return rem * getBaseFontSize();
   }
 
   /**
@@ -35,12 +45,13 @@
   /**
    * Generates a CSS clamp() declaration from the given parameters.
    * @param {string} property - The CSS property name.
-   * @param {number} minViewport - Min viewport width in px.
-   * @param {number} maxViewport - Max viewport width in px.
+   * @param {number} minViewport - Min viewport/container width in px.
+   * @param {number} maxViewport - Max viewport/container width in px.
    * @param {number} minSize - Min size in the chosen unit.
    * @param {number} maxSize - Max size in the chosen unit.
-   * @param {string} unit - 'rem' or 'px'.
-   * @return {{css: string, slope: number, interceptPx: number, preferred: string, minRem: number, maxRem: number}}
+   * @param {string} unit - 'rem', 'px', or 'unitless'.
+   * @param {string} [relativeUnit='vw'] - 'vw' or 'cqw'.
+   * @return {{css: string, slope: number, interceptPx: number, preferred: string, minRem: number, maxRem: number, unitless: boolean}}
    */
   function generateClamp(
     property,
@@ -49,7 +60,35 @@
     minSize,
     maxSize,
     unit,
+    relativeUnit,
   ) {
+    if (!relativeUnit) {
+      relativeUnit = "vw";
+    }
+
+    const isUnitless = unit === "unitless";
+
+    if (isUnitless) {
+      const slope = (maxSize - minSize) / (maxViewport - minViewport);
+      const intercept = minSize - slope * minViewport;
+
+      const slopeVw = round(slope * 100, 4);
+      const interceptRounded = round(intercept, 4);
+
+      const preferred = `${interceptRounded} + ${slopeVw}${relativeUnit}`;
+      const css = `${property}: clamp(${round(minSize, 4)}, ${preferred}, ${round(maxSize, 4)});`;
+
+      return {
+        css,
+        slope: round(slope, 6),
+        interceptPx: round(intercept, 4),
+        preferred,
+        minRem: round(minSize, 4),
+        maxRem: round(maxSize, 4),
+        unitless: true,
+      };
+    }
+
     const minPx = unit === "rem" ? remToPx(minSize) : minSize;
     const maxPx = unit === "rem" ? remToPx(maxSize) : maxSize;
 
@@ -57,11 +96,29 @@
     const interceptPx = minPx - slope * minViewport;
 
     const slopeVw = round(slope * 100, 4);
+
+    if (unit === "px") {
+      const interceptRounded = round(interceptPx, 4);
+      const preferred = `${interceptRounded}px + ${slopeVw}${relativeUnit}`;
+      const css = `${property}: clamp(${round(minPx, 4)}px, ${preferred}, ${round(maxPx, 4)}px);`;
+
+      return {
+        css,
+        slope: round(slope, 6),
+        interceptPx: round(interceptPx, 4),
+        preferred,
+        minRem: round(minPx, 4),
+        maxRem: round(maxPx, 4),
+        unitless: false,
+        outputUnit: "px",
+      };
+    }
+
     const interceptRem = round(pxToRem(interceptPx), 4);
     const minRem = unit === "rem" ? minSize : round(pxToRem(minPx), 4);
     const maxRem = unit === "rem" ? maxSize : round(pxToRem(maxPx), 4);
 
-    const preferred = `${interceptRem}rem + ${slopeVw}vw`;
+    const preferred = `${interceptRem}rem + ${slopeVw}${relativeUnit}`;
     const css = `${property}: clamp(${minRem}rem, ${preferred}, ${maxRem}rem);`;
 
     return {
@@ -71,12 +128,14 @@
       preferred,
       minRem,
       maxRem,
+      unitless: false,
+      outputUnit: "rem",
     };
   }
 
   /**
    * Reads, validates, and returns the current form values.
-   * @return {{property: string, minViewport: number, maxViewport: number, minSize: number, maxSize: number, unit: string} | null}
+   * @return {{property: string, minViewport: number, maxViewport: number, minSize: number, maxSize: number, unit: string, relativeUnit: string} | null}
    */
   function getInputs() {
     const propertySelect = document.getElementById("css-property");
@@ -91,11 +150,18 @@
     const maxSize = parseFloat(document.getElementById("max-size").value);
     const checkedUnit = document.querySelector('input[name="unit"]:checked');
     const unit = checkedUnit ? checkedUnit.value : "rem";
+    const checkedRelative = document.querySelector(
+      'input[name="relative-to"]:checked',
+    );
+    const relativeUnit = checkedRelative ? checkedRelative.value : "vw";
 
     const property =
       propertySelect.value === "custom"
         ? customPropertyInput?.value.trim() || "property"
         : propertySelect.value;
+
+    const isLineHeight = property === "line-height";
+    const effectiveUnit = isLineHeight ? "unitless" : unit;
 
     if (
       isNaN(minViewport) ||
@@ -110,7 +176,15 @@
       return null;
     }
 
-    return { property, minViewport, maxViewport, minSize, maxSize, unit };
+    return {
+      property,
+      minViewport,
+      maxViewport,
+      minSize,
+      maxSize,
+      unit: effectiveUnit,
+      relativeUnit,
+    };
   }
 
   /**
@@ -133,18 +207,23 @@
       inputs.minSize,
       inputs.maxSize,
       inputs.unit,
+      inputs.relativeUnit,
     );
 
     outputEl.textContent = result.css;
 
+    const context = inputs.relativeUnit === "cqw" ? "container" : "viewport";
+    const suffix = result.unitless ? "" : result.outputUnit || "rem";
     document.getElementById("breakdown-min").textContent =
-      `${result.minRem}rem`;
+      `${result.minRem}${suffix}`;
     document.getElementById("breakdown-max").textContent =
-      `${result.maxRem}rem`;
-    document.getElementById("breakdown-slope").textContent =
-      `${result.slope} (px change per px of viewport)`;
-    document.getElementById("breakdown-intercept").textContent =
-      `${result.interceptPx}px`;
+      `${result.maxRem}${suffix}`;
+    document.getElementById("breakdown-slope").textContent = result.unitless
+      ? `${result.slope} (unitless change per px of ${context})`
+      : `${result.slope} (px change per px of ${context})`;
+    document.getElementById("breakdown-intercept").textContent = result.unitless
+      ? `${result.interceptPx} (unitless)`
+      : `${result.interceptPx}px`;
     document.getElementById("breakdown-preferred").textContent =
       result.preferred;
   }
@@ -161,21 +240,80 @@
   }
 
   /**
+   * Updates viewport/container labels and hints based on the relative-to selection.
+   * @param {string} relativeUnit - 'vw' or 'cqw'.
+   */
+  function updateRelativeLabels(relativeUnit) {
+    const isContainer = relativeUnit === "cqw";
+    const minLabel = document.querySelector('label[for="min-viewport"]');
+    const maxLabel = document.querySelector('label[for="max-viewport"]');
+    const minHint = document.getElementById("min-viewport-hint");
+    const maxHint = document.getElementById("max-viewport-hint");
+
+    if (minLabel) {
+      minLabel.textContent = isContainer ? "Min Container" : "Min Viewport";
+    }
+    if (maxLabel) {
+      maxLabel.textContent = isContainer ? "Max Container" : "Max Viewport";
+    }
+    if (minHint) {
+      minHint.textContent = isContainer
+        ? "Smallest container width."
+        : "Smallest screen width.";
+    }
+    if (maxHint) {
+      maxHint.textContent = isContainer
+        ? "Largest container width."
+        : "Largest screen width.";
+    }
+  }
+
+  /**
+   * Shows or hides the root font size input based on the selected unit.
+   * @param {string} unit - 'rem' or 'px'.
+   */
+  function updateRootFontSizeVisibility(unit) {
+    const group = document.getElementById("root-font-size-group");
+    if (group) {
+      group.hidden = unit === "px";
+    }
+  }
+
+  /**
    * Applies a size preset from a preset button's data attributes.
    * @param {HTMLButtonElement} btn
    */
   function applyPreset(btn) {
-    const { minSize, maxSize, unit } = btn.dataset;
+    const { minSize, maxSize, unit, property } = btn.dataset;
 
     document.getElementById("min-size").value = minSize;
     document.getElementById("max-size").value = maxSize;
 
-    const unitRadio = document.querySelector(
-      `input[name="unit"][value="${unit}"]`,
-    );
-    if (unitRadio) {
-      unitRadio.checked = true;
-      updateUnitLabels(unit);
+    if (unit === "unitless") {
+      const remRadio = document.querySelector(
+        'input[name="unit"][value="rem"]',
+      );
+      if (remRadio) {
+        remRadio.checked = true;
+      }
+      updateUnitLabels("unitless");
+    } else {
+      const unitRadio = document.querySelector(
+        `input[name="unit"][value="${unit}"]`,
+      );
+      if (unitRadio) {
+        unitRadio.checked = true;
+        updateUnitLabels(unit);
+      }
+    }
+
+    if (property) {
+      const propertySelect = document.getElementById("css-property");
+      const customPropertyGroup = document.getElementById(
+        "custom-property-group",
+      );
+      propertySelect.value = property;
+      customPropertyGroup.hidden = true;
     }
 
     updateOutput();
@@ -198,6 +336,161 @@
         copyBtn.textContent = "Copy";
         copyBtn.classList.remove("results__copy-btn--copied");
         copyBtn.setAttribute("aria-label", "Copy generated CSS to clipboard");
+      }, 2000);
+    });
+  }
+
+  /**
+   * Generates a full type scale from body text sizes and a ratio.
+   * @param {number} bodyMinPx - Body text min size in px.
+   * @param {number} bodyMaxPx - Body text max size in px.
+   * @param {number} ratio - The scale ratio multiplier.
+   * @param {number} minViewport - Min viewport/container in px.
+   * @param {number} maxViewport - Max viewport/container in px.
+   * @param {Array<{label: string, step: number}>} levels - Heading levels to generate.
+   * @param {string} [relativeUnit='vw'] - 'vw' or 'cqw'.
+   * @return {Array<{label: string, css: string}>}
+   */
+  function generateTypeScale(
+    bodyMinPx,
+    bodyMaxPx,
+    ratio,
+    minViewport,
+    maxViewport,
+    levels,
+    relativeUnit,
+  ) {
+    const results = [];
+
+    for (const level of levels) {
+      const minPx = bodyMinPx * Math.pow(ratio, level.step);
+      const maxPx = bodyMaxPx * Math.pow(ratio, level.step);
+      const minRem = round(pxToRem(minPx), 4);
+      const maxRem = round(pxToRem(maxPx), 4);
+
+      const result = generateClamp(
+        "font-size",
+        minViewport,
+        maxViewport,
+        minRem,
+        maxRem,
+        "rem",
+        relativeUnit,
+      );
+
+      results.push({ label: level.label, css: result.css });
+    }
+
+    return results;
+  }
+
+  /**
+   * Reads the type scale form inputs and renders the scale output.
+   */
+  function handleGenerateScale() {
+    const bodyMinPx = parseFloat(
+      document.getElementById("scale-body-min").value,
+    );
+    const bodyMaxPx = parseFloat(
+      document.getElementById("scale-body-max").value,
+    );
+    const ratio = parseFloat(document.getElementById("scale-ratio").value);
+    const minViewport = parseFloat(
+      document.getElementById("min-viewport").value,
+    );
+    const maxViewport = parseFloat(
+      document.getElementById("max-viewport").value,
+    );
+
+    if (
+      isNaN(bodyMinPx) ||
+      isNaN(bodyMaxPx) ||
+      isNaN(ratio) ||
+      isNaN(minViewport) ||
+      isNaN(maxViewport) ||
+      bodyMinPx <= 0 ||
+      bodyMaxPx < bodyMinPx ||
+      minViewport <= 0 ||
+      maxViewport <= minViewport
+    ) {
+      return;
+    }
+
+    const checkboxes = document.querySelectorAll(
+      "#scale-levels-fieldset input[type='checkbox']",
+    );
+    const levels = [{ label: "body", step: 0 }];
+
+    checkboxes.forEach((cb) => {
+      if (cb.checked && cb.dataset.step) {
+        levels.push({ label: cb.value, step: parseInt(cb.dataset.step, 10) });
+      }
+    });
+
+    const checkedRelative = document.querySelector(
+      'input[name="relative-to"]:checked',
+    );
+    const relativeUnit = checkedRelative ? checkedRelative.value : "vw";
+
+    const scale = generateTypeScale(
+      bodyMinPx,
+      bodyMaxPx,
+      ratio,
+      minViewport,
+      maxViewport,
+      levels,
+      relativeUnit,
+    );
+
+    const resultsEl = document.getElementById("scale-results");
+    const outputEl = document.getElementById("scale-output");
+
+    const ratioSelect = document.getElementById("scale-ratio");
+    const ratioName =
+      ratioSelect.options[ratioSelect.selectedIndex].textContent;
+
+    let html = `<span class="scale-results__comment">/* Type Scale: ${ratioName} */</span>\n`;
+    for (const item of scale) {
+      html += `<span class="scale-results__line"><span class="scale-results__selector">${item.label}</span> { ${item.css} }</span>\n`;
+    }
+
+    outputEl.innerHTML = html;
+    resultsEl.hidden = false;
+  }
+
+  /**
+   * Handles the "Copy All" button for the type scale output.
+   */
+  function handleCopyAll() {
+    const outputEl = document.getElementById("scale-output");
+    const copyAllBtn = document.getElementById("copy-all-btn");
+
+    const ratioSelect = document.getElementById("scale-ratio");
+    const ratioName =
+      ratioSelect.options[ratioSelect.selectedIndex].textContent;
+
+    const lines = outputEl.querySelectorAll(".scale-results__line");
+    let text = `/* Type Scale: ${ratioName} */\n`;
+    lines.forEach((line) => {
+      const selector = line.querySelector(
+        ".scale-results__selector",
+      ).textContent;
+      const css = line.textContent.trim();
+      text += `${css}\n`;
+    });
+
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      copyAllBtn.textContent = "Copied!";
+      copyAllBtn.classList.add("results__copy-btn--copied");
+      copyAllBtn.setAttribute("aria-label", "Copied to clipboard");
+
+      setTimeout(() => {
+        copyAllBtn.textContent = "Copy All";
+        copyAllBtn.classList.remove("results__copy-btn--copied");
+        copyAllBtn.setAttribute(
+          "aria-label",
+          "Copy all generated CSS to clipboard",
+        );
       }, 2000);
     });
   }
@@ -287,10 +580,20 @@
 
     propertySelect.addEventListener("change", () => {
       const isCustom = propertySelect.value === "custom";
+      const isLineHeight = propertySelect.value === "line-height";
       customPropertyGroup.hidden = !isCustom;
 
       if (isCustom) {
         document.getElementById("custom-property").focus();
+      }
+
+      if (isLineHeight) {
+        updateUnitLabels("unitless");
+      } else {
+        const checkedUnit = document.querySelector(
+          'input[name="unit"]:checked',
+        );
+        updateUnitLabels(checkedUnit ? checkedUnit.value : "rem");
       }
 
       updateOutput();
@@ -299,6 +602,17 @@
     unitRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
         updateUnitLabels(radio.value);
+        updateRootFontSizeVisibility(radio.value);
+      });
+    });
+
+    const relativeRadios = document.querySelectorAll(
+      'input[name="relative-to"]',
+    );
+    relativeRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        updateRelativeLabels(radio.value);
+        updateOutput();
       });
     });
 
@@ -308,6 +622,17 @@
 
     if (copyBtn) {
       copyBtn.addEventListener("click", handleCopy);
+    }
+
+    const generateScaleBtn = document.getElementById("generate-scale-btn");
+    const copyAllBtn = document.getElementById("copy-all-btn");
+
+    if (generateScaleBtn) {
+      generateScaleBtn.addEventListener("click", handleGenerateScale);
+    }
+
+    if (copyAllBtn) {
+      copyAllBtn.addEventListener("click", handleCopyAll);
     }
   }
 

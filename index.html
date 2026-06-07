@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Generate precise CSS clamp() declarations for fluid typography and spacing. Enter your viewport breakpoints and size targets to get an instant, copy-pasteable result.">
+  <meta name="description"
+    content="Generate CSS clamp() declarations for fluid typography and spacing. Supports viewport (vw) and container query (cqw) units, plus a full type scale generator with modular ratios.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="CSS Clamp Generator - Fluid Typography Calculator">
-  <meta property="og:description" content="Generate precise CSS clamp() declarations for fluid typography and spacing. No math required. Instant copy-pasteable output.">
+  <meta property="og:description"
+    content="Generate CSS clamp() declarations for fluid typography, spacing, and full type scales with modular ratios. No math required.">
   <meta property="og:image" content="https://clampgen.com/images/opengraph.png">
   <meta property="og:url" content="https://clampgen.com/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="CSS Clamp Generator - Fluid Typography Calculator">
-  <meta name="twitter:description" content="Generate precise CSS clamp() declarations for fluid typography and spacing. No math required.">
+  <meta name="twitter:description"
+    content="Generate CSS clamp() declarations and full modular type scales for fluid typography. No math required.">
   <meta name="twitter:image" content="https://clampgen.com/images/opengraph.png">
   <link rel="canonical" href="https://clampgen.com/">
   <title>CSS Clamp Generator - Fluid Typography Calculator</title>
@@ -31,7 +35,17 @@
       }
     })();
   </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0Y0C5X27FW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-0Y0C5X27FW');
+  </script>
 </head>
+
 <body>
 
   <!-- SKIP NAVIGATION -->
@@ -42,21 +56,20 @@
     <div class="site-header__inner">
       <a href="/" class="site-header__logo" aria-label="ClampGen home">
         <svg class="site-header__logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-          <path d="M8 4C5.5 4 4 6 4 8v12c0 2 1.5 4 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M20 4c2.5 0 4 2 4 4v12c0 2-1.5 4-4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="10" y1="14" x2="18" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="12" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-          <line x1="12" y1="18" x2="16" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M8 4C5.5 4 4 6 4 8v12c0 2 1.5 4 4 4" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" />
+          <path d="M20 4c2.5 0 4 2 4 4v12c0 2-1.5 4-4 4" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" />
+          <line x1="10" y1="14" x2="18" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <line x1="12" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            opacity="0.5" />
+          <line x1="12" y1="18" x2="16" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            opacity="0.5" />
         </svg>
         <span class="site-header__logo-text">ClampGen</span>
       </a>
-      <button
-        class="theme-toggle"
-        id="theme-toggle"
-        type="button"
-        aria-label="Switch to dark mode"
-        aria-pressed="false"
-      >
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode"
+        aria-pressed="false">
         <span class="theme-toggle__icon theme-toggle__icon--light" aria-hidden="true">&#9788;</span>
         <span class="theme-toggle__icon theme-toggle__icon--dark" aria-hidden="true">&#9790;</span>
       </button>
@@ -78,8 +91,9 @@
         <h1 class="tool-section__title" id="tool-heading">CSS Clamp Generator</h1>
         <p class="tool-section__description">
           Generate fluid <code>clamp()</code> declarations for any CSS property.
-          Enter your viewport breakpoints and size targets to get a precise,
-          copy-pasteable CSS output with no math required.
+          Supports both viewport (<code>vw</code>) and container query (<code>cqw</code>)
+          units. Generate a single value or a full type scale from a modular ratio,
+          with no math required.
         </p>
 
         <!-- TOOL FORM -->
@@ -100,13 +114,8 @@
             </div>
             <div class="form-group" id="custom-property-group" hidden>
               <label class="form-group__label" for="custom-property">Custom Property Name</label>
-              <input
-                class="form-group__input"
-                type="text"
-                id="custom-property"
-                placeholder="e.g. border-radius"
-                aria-describedby="custom-property-hint"
-              >
+              <input class="form-group__input" type="text" id="custom-property" placeholder="e.g. border-radius"
+                aria-describedby="custom-property-hint">
               <span class="form-group__hint" id="custom-property-hint">
                 Any CSS property that accepts a length value.
               </span>
@@ -128,6 +137,34 @@
             </div>
           </fieldset>
 
+          <!-- ROOT FONT SIZE -->
+          <div class="form-group form-group--inline" id="root-font-size-group">
+            <label class="form-group__label" for="root-font-size">Root Font Size</label>
+            <div class="form-group__input-wrap">
+              <input class="form-group__input" type="number" id="root-font-size" value="16" min="1" step="1"
+                aria-describedby="root-font-size-hint">
+              <span class="form-group__suffix">px</span>
+            </div>
+            <span class="form-group__hint" id="root-font-size-hint">
+              Your html element's base font size.
+            </span>
+          </div>
+
+          <!-- RELATIVE TO TOGGLE -->
+          <fieldset class="unit-toggle">
+            <legend class="unit-toggle__legend">Relative To</legend>
+            <div class="unit-toggle__options">
+              <label class="unit-toggle__option">
+                <input class="unit-toggle__input" type="radio" name="relative-to" value="vw" checked>
+                <span class="unit-toggle__label">Viewport (vw)</span>
+              </label>
+              <label class="unit-toggle__option">
+                <input class="unit-toggle__input" type="radio" name="relative-to" value="cqw">
+                <span class="unit-toggle__label">Container (cqw)</span>
+              </label>
+            </div>
+          </fieldset>
+
           <!-- INPUT GRID -->
           <div class="tool-form__grid">
 
@@ -136,16 +173,8 @@
                 Min Viewport
               </label>
               <div class="form-group__input-wrap">
-                <input
-                  class="form-group__input"
-                  type="number"
-                  id="min-viewport"
-                  value="320"
-                  min="1"
-                  step="1"
-                  aria-required="true"
-                  aria-describedby="min-viewport-hint"
-                >
+                <input class="form-group__input" type="number" id="min-viewport" value="320" min="1" step="1"
+                  aria-required="true" aria-describedby="min-viewport-hint">
                 <span class="form-group__suffix">px</span>
               </div>
               <span class="form-group__hint" id="min-viewport-hint">Smallest screen width.</span>
@@ -156,16 +185,8 @@
                 Max Viewport
               </label>
               <div class="form-group__input-wrap">
-                <input
-                  class="form-group__input"
-                  type="number"
-                  id="max-viewport"
-                  value="1920"
-                  min="1"
-                  step="1"
-                  aria-required="true"
-                  aria-describedby="max-viewport-hint"
-                >
+                <input class="form-group__input" type="number" id="max-viewport" value="1920" min="1" step="1"
+                  aria-required="true" aria-describedby="max-viewport-hint">
                 <span class="form-group__suffix">px</span>
               </div>
               <span class="form-group__hint" id="max-viewport-hint">Largest screen width.</span>
@@ -176,16 +197,8 @@
                 Min Size
               </label>
               <div class="form-group__input-wrap">
-                <input
-                  class="form-group__input"
-                  type="number"
-                  id="min-size"
-                  value="1"
-                  min="0"
-                  step="0.01"
-                  aria-required="true"
-                  aria-describedby="min-size-hint"
-                >
+                <input class="form-group__input" type="number" id="min-size" value="1" min="0" step="0.01"
+                  aria-required="true" aria-describedby="min-size-hint">
                 <span class="form-group__suffix" id="size-unit-min">rem</span>
               </div>
               <span class="form-group__hint" id="min-size-hint">Smallest property value.</span>
@@ -196,16 +209,8 @@
                 Max Size
               </label>
               <div class="form-group__input-wrap">
-                <input
-                  class="form-group__input"
-                  type="number"
-                  id="max-size"
-                  value="2.5"
-                  min="0"
-                  step="0.01"
-                  aria-required="true"
-                  aria-describedby="max-size-hint"
-                >
+                <input class="form-group__input" type="number" id="max-size" value="2.5" min="0" step="0.01"
+                  aria-required="true" aria-describedby="max-size-hint">
                 <span class="form-group__suffix" id="size-unit-max">rem</span>
               </div>
               <span class="form-group__hint" id="max-size-hint">Largest property value.</span>
@@ -216,41 +221,130 @@
           <!-- PRESETS -->
           <div class="presets" role="group" aria-label="Quick presets">
             <span class="presets__label" aria-hidden="true">Quick Presets:</span>
-            <button class="presets__btn" type="button"
-              data-min-size="1" data-max-size="1.25" data-unit="rem"
-              aria-label="Apply body text preset">Body Text</button>
-            <button class="presets__btn" type="button"
-              data-min-size="1.25" data-max-size="1.75" data-unit="rem"
-              aria-label="Apply H3 preset">H3</button>
-            <button class="presets__btn" type="button"
-              data-min-size="1.5" data-max-size="2.25" data-unit="rem"
-              aria-label="Apply H2 preset">H2</button>
-            <button class="presets__btn" type="button"
-              data-min-size="1.75" data-max-size="3" data-unit="rem"
-              aria-label="Apply H1 preset">H1</button>
-            <button class="presets__btn" type="button"
-              data-min-size="1" data-max-size="2" data-unit="rem"
-              aria-label="Apply spacing preset">Spacing</button>
+            <button class="presets__btn" type="button" data-min-size="1" data-max-size="1.25" data-unit="rem"
+              data-property="font-size" aria-label="Apply body text preset">Body Text</button>
+            <button class="presets__btn" type="button" data-min-size="1.25" data-max-size="1.75" data-unit="rem"
+              data-property="font-size" aria-label="Apply H3 preset">H3</button>
+            <button class="presets__btn" type="button" data-min-size="1.5" data-max-size="2.25" data-unit="rem"
+              data-property="font-size" aria-label="Apply H2 preset">H2</button>
+            <button class="presets__btn" type="button" data-min-size="1.75" data-max-size="3" data-unit="rem"
+              data-property="font-size" aria-label="Apply H1 preset">H1</button>
+            <button class="presets__btn" type="button" data-min-size="1.4" data-max-size="1.6" data-unit="unitless"
+              data-property="line-height" aria-label="Apply line-height preset">Line Height</button>
+            <button class="presets__btn" type="button" data-min-size="1" data-max-size="2" data-unit="rem"
+              data-property="padding" aria-label="Apply spacing preset">Spacing</button>
           </div>
 
+          <!-- TYPE SCALE GENERATOR -->
+          <details class="type-scale" id="type-scale-details">
+            <summary class="type-scale__summary">Generate Full Type Scale</summary>
+            <div class="type-scale__body">
+              <p class="type-scale__description">
+                Enter your body text size range and choose a ratio. The tool calculates
+                heading sizes by multiplying each step up the scale.
+              </p>
+
+              <div class="type-scale__controls">
+                <div class="form-group">
+                  <label class="form-group__label" for="scale-ratio">Scale Ratio</label>
+                  <select class="form-group__input" id="scale-ratio">
+                    <option value="1.067">Minor Second (1.067)</option>
+                    <option value="1.125">Major Second (1.125)</option>
+                    <option value="1.2" selected>Minor Third (1.2)</option>
+                    <option value="1.25">Major Third (1.25)</option>
+                    <option value="1.333">Perfect Fourth (1.333)</option>
+                    <option value="1.414">Augmented Fourth (1.414)</option>
+                    <option value="1.5">Perfect Fifth (1.5)</option>
+                    <option value="1.618">Golden Ratio (1.618)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-group__label form-group__label--required" for="scale-body-min">
+                    Body Min Size
+                  </label>
+                  <div class="form-group__input-wrap">
+                    <input class="form-group__input" type="number" id="scale-body-min" value="16" min="1" step="1"
+                      aria-required="true">
+                    <span class="form-group__suffix">px</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-group__label form-group__label--required" for="scale-body-max">
+                    Body Max Size
+                  </label>
+                  <div class="form-group__input-wrap">
+                    <input class="form-group__input" type="number" id="scale-body-max" value="20" min="1" step="1"
+                      aria-required="true">
+                    <span class="form-group__suffix">px</span>
+                  </div>
+                </div>
+              </div>
+
+              <fieldset class="type-scale__levels" id="scale-levels-fieldset">
+                <legend class="type-scale__levels-legend">Include Levels</legend>
+                <div class="type-scale__levels-options">
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="body" checked disabled>
+                    <span>body</span>
+                  </label>
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="h6" data-step="1">
+                    <span>h6</span>
+                  </label>
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="h5" data-step="2">
+                    <span>h5</span>
+                  </label>
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="h4" data-step="3" checked>
+                    <span>h4</span>
+                  </label>
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="h3" data-step="4" checked>
+                    <span>h3</span>
+                  </label>
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="h2" data-step="5" checked>
+                    <span>h2</span>
+                  </label>
+                  <label class="type-scale__level-option">
+                    <input type="checkbox" value="h1" data-step="6" checked>
+                    <span>h1</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <button class="type-scale__generate-btn" type="button" id="generate-scale-btn">
+                Generate Scale
+              </button>
+            </div>
+          </details>
+
         </form>
+
+        <!-- TYPE SCALE RESULTS -->
+        <div class="scale-results" id="scale-results" hidden>
+          <div class="scale-results__header">
+            <span class="scale-results__label">Generated Type Scale</span>
+            <button class="results__copy-btn" type="button" id="copy-all-btn"
+              aria-label="Copy all generated CSS to clipboard">Copy All</button>
+          </div>
+          <output class="scale-results__output" id="scale-output" aria-live="polite">
+          </output>
+        </div>
 
         <!-- RESULTS -->
         <div class="results" aria-live="polite" aria-label="Generated CSS output">
           <div class="results__display">
             <span class="results__label">Generated CSS</span>
-            <output
-              class="results__display-value"
-              id="clamp-output"
-              for="min-viewport max-viewport min-size max-size css-property"
-            >font-size: clamp(1rem, 0.7rem + 1.5vw, 2.5rem);</output>
+            <output class="results__display-value" id="clamp-output"
+              for="min-viewport max-viewport min-size max-size css-property">font-size: clamp(1rem, 0.7rem + 1.5vw,
+              2.5rem);</output>
           </div>
-          <button
-            class="results__copy-btn"
-            type="button"
-            id="copy-btn"
-            aria-label="Copy generated CSS to clipboard"
-          >Copy</button>
+          <button class="results__copy-btn" type="button" id="copy-btn"
+            aria-label="Copy generated CSS to clipboard">Copy</button>
         </div>
 
         <!-- CALCULATION BREAKDOWN -->
@@ -425,6 +519,26 @@ preferred = intercept + (slope x 100vw)</code></pre>
             font sizes can fail this criterion.
           </p>
 
+          <h2>Viewport (vw) vs. Container (cqw) Units</h2>
+          <p>
+            By default, the generator produces <code>vw</code>-based clamp values that scale
+            relative to the full browser viewport width. This works perfectly for page-level
+            typography and global spacing.
+          </p>
+          <p>
+            For component-driven layouts where elements live inside containers of varying widths,
+            switch to <strong>Container (cqw)</strong> mode. This outputs <code>cqw</code> units
+            that scale relative to the nearest ancestor with <code>container-type: inline-size</code>.
+            The math is identical, but the scaling context changes from the viewport to the
+            component's container.
+          </p>
+          <p>
+            Container query units have full baseline support across Chrome, Firefox, Safari, and
+            Edge since February 2023. When using <code>cqw</code>, set the Min/Max Container
+            fields to the smallest and largest widths your component's container will occupy,
+            not the viewport width.
+          </p>
+
           <h2>Tips for Using This Generator</h2>
           <ul>
             <li>
@@ -446,6 +560,15 @@ preferred = intercept + (slope x 100vw)</code></pre>
             <li>
               Use the "Show calculation breakdown" panel to understand the slope and intercept values.
               This is useful for debugging or verifying the output against your design specs.
+            </li>
+            <li>
+              Open "Generate Full Type Scale" to create an entire set of heading sizes from a
+              modular ratio. Choose your body text range, pick a ratio like Minor Third or Perfect
+              Fourth, and the tool calculates every heading level for you.
+            </li>
+            <li>
+              Use the "Copy All" button on the type scale output to grab every declaration at
+              once, formatted and ready to paste into your stylesheet.
             </li>
           </ul>
 
@@ -491,4 +614,5 @@ preferred = intercept + (slope x 100vw)</code></pre>
   <script src="js/content.js"></script>
 
 </body>
+
 </html>
