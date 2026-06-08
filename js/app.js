@@ -77,9 +77,11 @@
 
       const preferred = `${interceptRounded} + ${slopeVw}${relativeUnit}`;
       const css = `${property}: clamp(${round(minSize, 4)}, ${preferred}, ${round(maxSize, 4)});`;
+      const comment = `/* ${round(minSize, 4)} at ${minViewport}px ${relativeUnit === "cqw" ? "container" : "viewport"} → ${round(maxSize, 4)} at ${maxViewport}px ${relativeUnit === "cqw" ? "container" : "viewport"} */`;
 
       return {
         css,
+        comment,
         slope: round(slope, 6),
         interceptPx: round(intercept, 4),
         preferred,
@@ -101,9 +103,12 @@
       const interceptRounded = round(interceptPx, 4);
       const preferred = `${interceptRounded}px + ${slopeVw}${relativeUnit}`;
       const css = `${property}: clamp(${round(minPx, 4)}px, ${preferred}, ${round(maxPx, 4)}px);`;
+      const context = relativeUnit === "cqw" ? "container" : "viewport";
+      const comment = `/* ${round(minPx, 4)}px at ${minViewport}px ${context} → ${round(maxPx, 4)}px at ${maxViewport}px ${context} */`;
 
       return {
         css,
+        comment,
         slope: round(slope, 6),
         interceptPx: round(interceptPx, 4),
         preferred,
@@ -120,14 +125,19 @@
 
     const preferred = `${interceptRem}rem + ${slopeVw}${relativeUnit}`;
     const css = `${property}: clamp(${minRem}rem, ${preferred}, ${maxRem}rem);`;
+    const context = relativeUnit === "cqw" ? "container" : "viewport";
+    const comment = `/* ${round(minPx, 4)}px at ${minViewport}px ${context} → ${round(maxPx, 4)}px at ${maxViewport}px ${context} */`;
 
     return {
       css,
+      comment,
       slope: round(slope, 6),
       interceptPx: round(interceptPx, 4),
       preferred,
       minRem,
       maxRem,
+      minPx: round(minPx, 4),
+      maxPx: round(maxPx, 4),
       unitless: false,
       outputUnit: "rem",
     };
@@ -210,7 +220,7 @@
       inputs.relativeUnit,
     );
 
-    outputEl.textContent = result.css;
+    outputEl.innerHTML = `<span class="results__comment">${result.comment}</span>\n${result.css}`;
 
     const context = inputs.relativeUnit === "cqw" ? "container" : "viewport";
     const suffix = result.unitless ? "" : result.outputUnit || "rem";
@@ -325,7 +335,7 @@
   function handleCopy() {
     const outputEl = document.getElementById("clamp-output");
     const copyBtn = document.getElementById("copy-btn");
-    const text = outputEl.textContent;
+    const text = outputEl.textContent.trim();
 
     navigator.clipboard.writeText(text).then(() => {
       copyBtn.textContent = "Copied!";
@@ -378,7 +388,12 @@
         relativeUnit,
       );
 
-      results.push({ label: level.label, css: result.css });
+      results.push({
+        label: level.label,
+        css: result.css,
+        minPx: round(minPx, 2),
+        maxPx: round(maxPx, 2),
+      });
     }
 
     return results;
@@ -448,10 +463,13 @@
     const ratioSelect = document.getElementById("scale-ratio");
     const ratioName =
       ratioSelect.options[ratioSelect.selectedIndex].textContent;
+    const context = relativeUnit === "cqw" ? "container" : "viewport";
+    const headerComment = `/* Type Scale: ${ratioName} — ${bodyMinPx}px → ${bodyMaxPx}px body at ${minViewport}px → ${maxViewport}px ${context} */`;
 
-    let html = `<span class="scale-results__comment">/* Type Scale: ${ratioName} */</span>\n`;
+    let html = `<span class="scale-results__comment">${headerComment}</span>\n`;
     for (const item of scale) {
-      html += `<span class="scale-results__line"><span class="scale-results__selector">${item.label}</span> { ${item.css} }</span>\n`;
+      const lineComment = `/* ${item.minPx}px \u2192 ${item.maxPx}px */`;
+      html += `<span class="scale-results__line"><span class="scale-results__selector">${item.label}</span> { ${item.css} } <span class="scale-results__line-comment">${lineComment}</span></span>\n`;
     }
 
     outputEl.innerHTML = html;
@@ -465,21 +483,9 @@
     const outputEl = document.getElementById("scale-output");
     const copyAllBtn = document.getElementById("copy-all-btn");
 
-    const ratioSelect = document.getElementById("scale-ratio");
-    const ratioName =
-      ratioSelect.options[ratioSelect.selectedIndex].textContent;
+    const text = outputEl.textContent.trim();
 
-    const lines = outputEl.querySelectorAll(".scale-results__line");
-    let text = `/* Type Scale: ${ratioName} */\n`;
-    lines.forEach((line) => {
-      const selector = line.querySelector(
-        ".scale-results__selector",
-      ).textContent;
-      const css = line.textContent.trim();
-      text += `${css}\n`;
-    });
-
-    navigator.clipboard.writeText(text.trim()).then(() => {
+    navigator.clipboard.writeText(text).then(() => {
       copyAllBtn.textContent = "Copied!";
       copyAllBtn.classList.add("results__copy-btn--copied");
       copyAllBtn.setAttribute("aria-label", "Copied to clipboard");

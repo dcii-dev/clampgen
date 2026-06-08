@@ -521,6 +521,14 @@ code {
   font-size: 1.125rem;
   color: var(--clr-text);
   word-break: break-all;
+  white-space: pre;
+}
+
+.results__comment {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
 }
 
 .results__copy-btn {
@@ -790,6 +798,10 @@ code {
 
 .scale-results__selector {
   color: #89b4fa;
+}
+
+.scale-results__line-comment {
+  color: #6c7086;
 }
 
 /* ================================
