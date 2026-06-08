@@ -964,6 +964,14 @@ details[open] .faq__question::after {
 }
 
 /* ================================
+   CONTENT SIDEBAR
+   ================================ */
+.content-sidebar {
+  position: sticky;
+  top: 5rem;
+}
+
+/* ================================
    SITE FOOTER
    ================================ */
 .site-footer {
