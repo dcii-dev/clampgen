@@ -43,6 +43,39 @@
   }
 
   /**
+   * Sends a GA4 event when gtag is available.
+   * @param {string} eventName
+   * @param {Object<string, string|number>} [params]
+   */
+  function sendAnalyticsEvent(eventName, params) {
+    if (typeof window.gtag !== "function") {
+      return;
+    }
+
+    window.gtag("event", eventName, params || {});
+  }
+
+  /**
+   * Returns a common analytics context payload from current inputs.
+   * @return {Object<string, string|number>}
+   */
+  function getTrackingContext() {
+    const inputs = getInputs();
+
+    if (!inputs) {
+      return {};
+    }
+
+    return {
+      css_property: inputs.property,
+      size_unit: inputs.unit,
+      relative_to: inputs.relativeUnit,
+      min_viewport: inputs.minViewport,
+      max_viewport: inputs.maxViewport,
+    };
+  }
+
+  /**
    * Generates a CSS clamp() declaration from the given parameters.
    * @param {string} property - The CSS property name.
    * @param {number} minViewport - Min viewport/container width in px.
@@ -326,6 +359,12 @@
       customPropertyGroup.hidden = true;
     }
 
+    sendAnalyticsEvent("preset_applied", {
+      preset_name: btn.textContent ? btn.textContent.trim() : "unknown",
+      preset_property: property || "font-size",
+      preset_unit: unit || "rem",
+    });
+
     updateOutput();
   }
 
@@ -336,8 +375,14 @@
     const outputEl = document.getElementById("clamp-output");
     const copyBtn = document.getElementById("copy-btn");
     const text = outputEl.textContent.trim();
+    const trackingContext = getTrackingContext();
 
     navigator.clipboard.writeText(text).then(() => {
+      sendAnalyticsEvent("clamp_css_copied", {
+        ...trackingContext,
+        character_count: text.length,
+      });
+
       copyBtn.textContent = "Copied!";
       copyBtn.classList.add("results__copy-btn--copied");
       copyBtn.setAttribute("aria-label", "Copied to clipboard");
@@ -474,6 +519,14 @@
 
     outputEl.innerHTML = html;
     resultsEl.hidden = false;
+
+    sendAnalyticsEvent("type_scale_generated", {
+      ...getTrackingContext(),
+      scale_ratio: ratio,
+      level_count: levels.length,
+      body_min_px: bodyMinPx,
+      body_max_px: bodyMaxPx,
+    });
   }
 
   /**
@@ -486,6 +539,11 @@
     const text = outputEl.textContent.trim();
 
     navigator.clipboard.writeText(text).then(() => {
+      sendAnalyticsEvent("type_scale_copied", {
+        ...getTrackingContext(),
+        character_count: text.length,
+      });
+
       copyAllBtn.textContent = "Copied!";
       copyAllBtn.classList.add("results__copy-btn--copied");
       copyAllBtn.setAttribute("aria-label", "Copied to clipboard");
@@ -565,6 +623,7 @@
     const form = document.getElementById("clamp-form");
     const copyBtn = document.getElementById("copy-btn");
     const themeToggleBtn = document.getElementById("theme-toggle");
+    const hubLink = document.querySelector(".site-header__hub-link");
     const propertySelect = document.getElementById("css-property");
     const customPropertyGroup = document.getElementById(
       "custom-property-group",
@@ -580,6 +639,15 @@
 
     if (themeToggleBtn) {
       themeToggleBtn.addEventListener("click", toggleTheme);
+    }
+
+    if (hubLink) {
+      hubLink.addEventListener("click", () => {
+        sendAnalyticsEvent("other_tools_click", {
+          destination: "otherusefultools.com",
+          location: "header",
+        });
+      });
     }
 
     form.addEventListener("input", updateOutput);
