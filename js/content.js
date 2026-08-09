@@ -34,6 +34,29 @@
   }
 
   /**
+   * Injects FAQPage JSON-LD schema into the document head.
+   * @param {Array<{question: string, answer: string}>} data
+   */
+  function injectFaqSchema(data) {
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: data.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    };
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+  }
+
+  /**
    * Fetches FAQ data and renders the accordion.
    */
   function loadContent() {
@@ -45,7 +68,10 @@
         if (!response.ok) throw new Error("FAQ data unavailable.");
         return response.json();
       })
-      .then((data) => renderFaq(data, container))
+      .then((data) => {
+        renderFaq(data, container);
+        injectFaqSchema(data);
+      })
       .catch(() => {
         // Silently fail — FAQ is supplementary content, not critical UI.
       });
